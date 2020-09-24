@@ -1,6 +1,6 @@
 #+title: Setting up Q2A via a Dokku instance
 #+created: [2020-09-24 Thu]
-#+last_modified: [2020-09-24 Thu 22:43]
+#+last_modified: [2020-09-24 Thu 22:53]
 
 * Setting up Dokku
 1. Install ~vagrant~ to run Debian in a VM
@@ -40,7 +40,7 @@ Initialised with ~mariadb~, but also works with plain ~mysql~.
 
    # Obtain auth-info
    dokku mariadb:info q2a-db --dsn
-   # Retrieve password from output, e.g. `mysql://mysql:$PASSWORD@dokku-mysql-q2a-db:3306/q2a_db`
+   # Retrieve password from output, e.g. `mysql://mariadb:$PASSWORD@dokku-mariadb-q2a-db:3306/q2a_db`
 #+end_src
 
 * [[https://docs.question2answer.org/install/][Install Question2Answer]]
