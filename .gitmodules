@@ -1,0 +1,3 @@
+[submodule "test-deployment"]
+	path = q2a-on-dokku-test-deployment
+	url = git@github.com:zaeph/q2a-on-dokku-test-deployment.git
