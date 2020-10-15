@@ -1,22 +1,26 @@
 #+title: Setting up Q2A via a Dokku instance
 #+created: [2020-09-24 Thu]
-#+last_modified: [2020-09-24 Thu 22:53]
 
 * Setting up Dokku
+
 1. Install ~vagrant~ to run Debian in a VM
+
 2. [[https://github.com/dokku/dokku#installation][Bootstrap Dokku]]
    #+begin_src bash
    wget https://raw.githubusercontent.com/dokku/dokku/v0.21.4/bootstrap.sh
    sudo DOKKU_TAG=v0.21.4 bash bootstrap.sh
    #+end_src
+
 3. Web setup
    - Add ssh key for admin access
    - Name remote
+
 4. Install [[https://github.com/heroku/heroku-buildpack-php][heroku-buildpack-php]]
    Probably unnecessary (default, or already installed)
    #+begin_src bash
    dokku buildpacks:add php https://github.com/heroku/heroku-buildpack-php.git
    #+end_src
+
 5. Install [[https://github.com/dokku/dokku-mysql][dokku-mysql]]
    Probably unnecessary (already installed)
    #+begin_src bash
@@ -24,6 +28,7 @@
    #+end_src
 
 * Prepare containers for Q2A
+
 ** Q2A
 #+begin_src bash
    dokku apps:create q2a
@@ -32,42 +37,55 @@
    # Using 80 as an example
    dokku proxy:ports-add q2a http:80:5000
 #+end_src
-** MySQL database
-Initialised with ~mariadb~, but also works with plain ~mysql~.
-#+begin_src bash
-   dokku mariadb:create q2a-db
-   dokku mariadb:link q2a-db q2a
 
-   # Obtain auth-info
-   dokku mariadb:info q2a-db --dsn
-   # Retrieve password from output, e.g. `mysql://mariadb:$PASSWORD@dokku-mariadb-q2a-db:3306/q2a_db`
+** MySQL database
+Initialised with ~mysql~, but also works with ~mariadb~ and others.
+#+begin_src bash
+dokku mysql:create q2a
+dokku mysql:link q2a q2a
+
+# Obtain auth-info
+dokku mysql:info q2a --dsn
+# Retrieve password from output, e.g. `mysql://mysql:$PASSWORD@dokku-mysql-q2a:3306/q2a`
+
+# Replace $PASSWORD with the retrieved value
+dokku config:set q2a DATABASE_PASSWORD='$PASSWORD'
 #+end_src
 
 * [[https://docs.question2answer.org/install/][Install Question2Answer]]
-1. Download latest [[https://github.com/q2a/question2answer/releases][release]]
+
+1. Download the latest [[https://github.com/q2a/question2answer/releases][release]]
+
 2. Unzip in a folder
+
 3. Init git repo
+
 4. Init ~composer.json~, required for dokku containers
    #+begin_src bash
    echo '{}' > composer.json
    #+end_src
+
 5. Init ~qa-config.php~
    #+begin_src bash
    mv qa-config-example.php qa-config.php
    #+end_src
-6. In ~qa-config.php~, replace ~$PASSWORD~, and pay attention to the underscore for ~QA_MYSQL_DATABASE~
+
+6. Modify ~qa-config.php~ with the database info obtained in the previous step:
    #+begin_src php
    ...
-        define('QA_MYSQL_HOSTNAME', 'dokku-mariadb-q2a-db');
+        define('QA_MYSQL_HOSTNAME', 'dokku-mysql-q2a');
         define('QA_MYSQL_PORT', '3306');
-        define('QA_MYSQL_USERNAME', 'mariadb');
-        define('QA_MYSQL_PASSWORD', '$PASSWORD');
-        define('QA_MYSQL_DATABASE', 'q2a_db');
+        define('QA_MYSQL_USERNAME', 'mysql);
+        define('QA_MYSQL_PASSWORD', getenv('DATABASE_PASSWORD'));
+        define('QA_MYSQL_DATABASE', 'q2a');
    ...
+   Note that ~QA_MYSQL_PASSWORD~ is retrieved from dokku’s ~ENV~
    #+end_src
+
 7. Add remote and push
    #+begin_src bash
    git remote add dokku@server:q2a
    git push dokku master
    #+end_src
+
 8. Configure via web-interface
