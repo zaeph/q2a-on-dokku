@@ -80,7 +80,7 @@ dokku config:set q2a DATABASE_PASSWORD='$PASSWORD'
         define('QA_MYSQL_DATABASE', 'q2a');
    ...
    #+end_src
-   Note that ~QA_MYSQL_PASSWORD~ is retrieved from dokku’s ~ENV~.
+   Note that ~QA_MYSQL_PASSWORD~ is retrieved from the app’s ~ENV~ (managed with dokku).
 
 7. Add remote and push
    #+begin_src bash
